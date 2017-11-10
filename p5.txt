@@ -46,6 +46,8 @@ Se ha capturado una sesión SIP (archivo sip.cap.gz), que se puede abrir con Wir
 
 5. Analiza las primeras cuatro tramas de la captura nada más arrancar Ekiga.
  ** ¿Qué servicio es el utilizado en estas tramas?
+	DNS
+
  ** ¿Cuál es la dirección IP del servidor de nombres del ordenador que ha lanzado Ekiga?
 	80.58.61.250
 
@@ -92,25 +94,48 @@ Se ha capturado una sesión SIP (archivo sip.cap.gz), que se puede abrir con Wir
 
 9. Fijémonos en las tramas siguientes a la número 46:
  ** ¿Se registra con éxito en el primer intento?
- ** ¿Cómo sabemos si el registro se ha realizado correctamente o no?
- ** ¿Podrías identificar las diferencias entre el primer intento y el segundo de registro? (fíjate en el tamaño de los paquetes y mira a qué se debe el cambio)
- ** ¿Cuánto es el valor del tiempo de expiración de la sesión? Indica las unidades.
+	NO, EL REGISTER MANDA EL MENSAJE 401 Unauthorized
 
+ ** ¿Cómo sabemos si el registro se ha realizado correctamente o no?
+	PORQUE DESPUÉS (CON EL SEGUNDO REGISTER) EL REGISTRAR LE MANDA UN 200 OK
+
+ ** ¿Podrías identificar las diferencias entre el primer intento y el segundo de registro? (fíjate en el tamaño de los paquetes y mira a qué se debe el cambio)
+	EL TAMAÑO DEL PRIMER PAQUETE ES 523 BYTES Y EL SEGUNDO 712, ESTO SE DEBE A QUE EL REGISTRAR LE MANDA UN NONCE PARA QUE EL CLIENTE LE CONTESTE CON ESE NONCE 		MODIFICADO CON SU CONTRASEÑA
+
+ ** ¿Cuánto es el valor del tiempo de expiración de la sesión? Indica las unidades.
+	3600 (1H)
 
 10. Una vez registrados, podemos efectuar una llamada. Vamos a probar con el servicio de eco de Ekiga que nos permite comprobar si nos hemos conectado correctamente. El servicio de eco tiene la dirección sip:500@ekiga.net. Veamos el INVITE de cerca.
  ** ¿Puede verse el nombre del que efectúa la llamada, así como su dirección SIP?
- ** ¿Qué es lo que contiene el cuerpo de la trama? ¿En qué formato/protocolo está?
- ** ¿Tiene éxito el primer intento? ¿Cómo lo sabes?
- ** ¿En qué se diferencia el segundo INVITE más abajo del primero? ¿A qué crees que se debe esto?
+	SI DENTRO DE SIP (CABECERA), EN MESSAGE HEADER EN EL CAMPO FROM: "Gregorio Robles" <sip:grex@ekiga.net>
 
+ ** ¿Qué es lo que contiene el cuerpo de la trama? ¿En qué formato/protocolo está?
+	DESCRIPCIÓN SESIÓN SIP (UDP)
+ 
+ ** ¿Tiene éxito el primer intento? ¿Cómo lo sabes?
+	NO, YA QUE NO ESTA SIENDO UN PEER-TO-PEER, SI NO QUE HAY UN PROXY, ESTE PIDE AUTENTICACIÓN. PORQUE DA EL ERROR 407 Proxy Authentication Requiered
+
+ ** ¿En qué se diferencia el segundo INVITE más abajo del primero? ¿A qué crees que se debe esto?
+	EN EL SEGUNDO INVITE EL CLIENTE LE ENVÍA EL VALOR NONCE QUE HA GENERADO CON EL QUE LE HA MANDADO EL PROXY Y SU CONTRASEÑA.
 
 11. Una vez conectado, estudia el intercambio de tramas.
  ** ¿Qué protocolo(s) se utiliza(n)? ¿Para qué sirven estos protocolos?
- ** ¿Cuál es el tamaño de paquete de los mismos?
- ** ¿Se utilizan bits de padding?
- ** ¿Cuál es la periodicidad de los paquetes que se envían?
- ** ¿Cuántos bits/segundo estamos enviando?
+	SIP PARA ESTABLECER LA LLAMADA A TRAVÉS DEL PROXY
+	DNS PARA SABER LA IP DE EKIGA
+	ACK PARA ASENTIR
+	RTP PARA TRANSMISIÓN DE AUDIO Y VIDEO
 
+ ** ¿Cuál es el tamaño de paquete de los mismos?
+	LOS DE RTP: APROXIMADAMENTE 214 BYTES
+	Y LOS DE H.261(VIDEO RTP): NORMALMENTE ENTRE 1000 Y 1100
+
+ ** ¿Se utilizan bits de padding?
+	NO, EL VALOR EN TODOS ELLOS ES FALSO. NO SE UTILIZAN BYTES DE RELLENO
+
+ ** ¿Cuál es la periodicidad de los paquetes que se envían?
+	
+ ** ¿Cuántos bits/segundo estamos enviando?
+	
 
 
 [Al terminar el ejercicio es recomendable hacer commit de los ficheros modificados]
