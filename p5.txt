@@ -68,7 +68,7 @@ Se ha capturado una sesión SIP (archivo sip.cap.gz), que se puede abrir con Wir
 	DEVUELVE EN EL 200 OK LA IP 83.36.48.212
 
  ** Si lanzamos el navegador web, por ejemplo, Mozilla Firefox, y vamos a la misma URL, ¿qué recibimos? ¿Qué es, entonces, lo que está respondiendo el servidor?
-	212.128.254.152
+	212.128.254.152, NUESTRA IP PUBLICA
 
 7. Hasta la trama 45 se puede observar una secuencia de tramas del protocolo STUN.
  ** ¿Por qué crees que se hace uso de este protocolo en esta captura? Busca en la Wikipedia.
@@ -133,44 +133,77 @@ Se ha capturado una sesión SIP (archivo sip.cap.gz), que se puede abrir con Wir
 	NO, EL VALOR EN TODOS ELLOS ES FALSO. NO SE UTILIZAN BYTES DE RELLENO
 
  ** ¿Cuál es la periodicidad de los paquetes que se envían?
-	
+	TIMESTAMP 0.02
+
  ** ¿Cuántos bits/segundo estamos enviando?
-	
+	64000 BITS POR SEGUNDO
 
 
 [Al terminar el ejercicio es recomendable hacer commit de los ficheros modificados]
 
 12. Vamos a ver más a fondo el intercambio RTP. En Telephony hay una opción RTP. Empecemos mirando los flujos RTP.
  ** ¿Cuántos flujos hay? ¿por qué?
+	DOS. UNO ES EL DE AUDIO Y EL OTRO ES EL DE VIDEO, SALEN Y LLEGAN A PUERTOS DIFERENTES.
+
  ** ¿Cuántos paquetes se pierden?
+	0
+
  ** ¿Cuál es el valor máximo del delta? ¿Y qué es lo que significa el valor de delta?
+	DEL AUDIO 1290.444000
+	DEL VIDEO: 1290.479000
+	TIEMPO MÁXIMO (MILISEGUNDOS) ENTRE DOS PAQUETES. LO MÁS IDÓNEO ES QUE SEA CERCANO A CERO.
+
  ** ¿Cuáles son los valores de jitter (medio y máximo)? ¿Qué quiere decir eso? ¿Estamos ante una conversación de calidad?
+	DEL AUDIO: 119.635154
+	DEL VIDEO: 183.095775
+	ES LA VARIACIÓN EN EL RETRASO DEL PAQUETE (MILISEGUNDOS)
 
 
 13. Elige un paquete RTP de audio. Analiza el flujo de audio en Telephony -> RTP -> Stream Analysis.
  ** ¿Cuánto valen el delta y el jitter para el primer paquete que ha llegado?
+	0
+
  ** ¿Podemos saber si éste es el primer paquete que nos han enviado?
+	LO PODEMOS SABER POR EL NUMERO DE SECUENCIA Y POR EL MARKER
+
  ** Los valores de jitter son menores de 10ms hasta un paquete dado. ¿Cuál?
+	HASTA EL PAQUETE 247 QUE PASA DE UNA MEDIA DE 4/5 A 38
+
  ** ¿A qué se debe el cambio tan brusco del jitter?
+	AL CAMBIO TAN GRANDE DE LA DELTA
+
  ** ¿Es comparable este cambio con el tiempo desde la recepción del paquete anterior? ¿Por qué?
+
  ** ¿Cuál es la dependencia entre el tiempo transcurrido desde el paquete anterior y el valor de jitter?
+	EL VALOR DE LA DELTA HA CAMBIADO, HA SUBIDO A 554.74 (ANTES 24.03)
 
 
 14. En Telephony selecciona el menú VoIP calls. Verás que se lista la llamada de voz IP capturada en una ventana emergente. Selecciona esa llamada y pulsa el botón Graph.
  ** ¿Cuánto dura la conversación?
+	25 SEGUNDOS 
+
  ** ¿Cuáles son sus SSRC? ¿Por qué hay varios SSRCs? ¿Hay CSRCs?
+	0xBF4AFD37 (SSRC) Y A 0 (CSRCs)
 
 
 15. Identifica la trama donde se finaliza la conversación.
  ** ¿Qué método SIP se utiliza?
+	BYE sip:500@86.64.162.35:5080 (EL CLIENTE CIERRA SESIÓN A EKIGA)
  ** ¿En qué trama(s)?
+	EN 4 TRAMAS
  ** ¿Por qué crees que se envía varias veces?
+	PORQUE LE FALTA LA DIR ETH DE ALGUIEN (UN ROUTER PODRÍA SER) PARA PODER MANDARLO
 
 
 16. Finalmente, se cierra la aplicación de VozIP.
  ** ¿Por qué aparece una instrucción SIP del tipo REGISTER?
+	PORQUE MANDA ESE REGISTER CON UN EXPIRES DE 0, POR LO TANTO ASÍ LE BORRA (VUELVE A PASAR EL ERROR DE AUTENTICACIÓN 401)
+
  ** ¿En qué trama sucede esto?
+	SUCEDE EN LA 950/952(CON NONCE)
+
  ** ¿En qué se diferencia con la instrucción que se utilizó con anterioridad (al principio de la sesión)?
+	EN EL EXPIRES
 
 
 
@@ -185,17 +218,40 @@ Captura una sesión SIP de una conversación con el número SIP sip:9999@qxip.ne
 
 17. Observa las diferencias en el inicio de la conversación entre el entorno del laboratorio y el del ejercicio anterior:
  ** ¿Es necesario el uso de DNS y STUN? ¿Por qué?
- ** ¿Son diferentes el registro y la descripción de la sesión?
+	DNS SI LO UTILIZA, PORQUE IGUALMENTE TIENE QUE CONSEGUIR LA IP DE EKIGA
+	SI PORQUE SE ESTA HACIENDO USO DE IPS PRIVADAS Y SE NECESITA LA PUBLICA
 
+ ** ¿Son diferentes el registro y la descripción de la sesión?
+	EN LA DESCRIPCIÓN PODEMOS VER QUE LA NUESTRA ES DE AUDIO Y DE VIDEO
+
+	EN EL REGISTER LA DIFERENCIA ES EL CAMPO TO Y CONTACT, QUE EN LA CAPTURA ANTERIOR APARECIA GREX, Y EN ESTA APARECE MI DIRECCION QUE ES MGAVILA. TAMBIEN CAMBIA 		EL USER AGENT, AUTHORIZATION, CALL ID.
 
 18. Identifica las diferencias existentes entre esta conversación y la conversación anterior:
  ** ¿Cuántos flujos tenemos?
+	HAY 4 FLUJOS DONDE THEORA EL VIDEO Y SPEEX ES AUDIO (MIO Y DEL OTRO USUARIO)
+
  ** ¿Cuál es su periodicidad?
+	EN VIDEO YA QUE NO MANDA SIEMPRE LA MISMA CANTIDAD DE BYTES YA QUE NO ES NECESARIO, NO HABRÁ UNA "PERIODICIDAD" EXACTA
+	EN AUDIO SI QUE HABRÁ, PERO SOLO HAY SILENCIO EN ESTE CASO
+	
  ** ¿Cuánto es el valor máximo del delta y los valores medios y máximo del jitter?
+	MAX DELTA:
+		AUDIO (30,2 Y 30,5)
+		VIDEO(0,116 Y 0,012)
+
+	MAX JITTER:
+		AUDIO(13,7 Y 13,5)
+		VIDEO(0.009 Y 0.001)
+
+	MEDIA JITTER:
+		AUDIO(13,1 Y 13,2)
+		VIDEO(0.05 Y 0.005)
+
  ** ¿Podrías reproducir la conversación desde Wireshark? ¿Cómo? Comprueba que poniendo un valor demasiado pequeño para el buffer de jitter, la conversación puede no tener la calidad necesaria.
+	EN TELEPHONY VOIP CALLS Y DESPUES PINCHAS EN LA ÚNICA QUE HAY Y LUEGO PINCHAS Y REPRODUCES LO QUE QUIERAS ESCUCHAR O VER.
+
  ** ¿Sabrías decir qué tipo de servicio ofrece sip:9999@qxip.net?
-
-
+	MUSICA EN ESPERA
 
 [Al terminar el ejercicio es recomendable hacer commit de los ficheros modificados]
 
